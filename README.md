@@ -1,5 +1,8 @@
 # vul-app-fe
 
+Group 7 Vulnerable Application Front End
+Learn Vue3: https://vuejs.org/
+
 ## Project setup
 ```
 npm install

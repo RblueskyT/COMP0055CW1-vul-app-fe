@@ -1,19 +1,25 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import NProgress from 'nprogress'; // progress bar
+import 'nprogress/nprogress.css';
+
+NProgress.configure({ showSpinner: false }); // NProgress Configuration
 
 const routes = [
   {
     path: '/',
-    name: 'home',
-    component: HomeView
+    redirect: 'login',
   },
   {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+    path: '/login',
+    name: 'login',
+    meta: { title: 'Vulnerable Application - Login Page' },
+    component: () => import('../views/LoginView.vue')
+  },
+  {
+    path: '/example',
+    name: 'example',
+    meta: { title: 'Vulnerable Application - Example Page' },
+    component: () => import('../views/ExampleView.vue')
   }
 ]
 
@@ -21,5 +27,16 @@ const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
 })
+
+router.beforeEach(async (_to, _from, next) => {
+  NProgress.start();
+  if (_to.meta.title) {
+    document.title = _to.meta.title;
+  } else {
+    document.title = 'Group 7 - Vulnerable Application';
+  }
+  await next();
+  NProgress.done();
+});
 
 export default router
