@@ -20,6 +20,12 @@ const routes = [
     name: 'example',
     meta: { title: 'Vulnerable Application - Example Page' },
     component: () => import('../views/ExampleView.vue')
+  },
+  {
+    path: '/tweet',
+    name: 'tweet',
+    meta: { title: 'Vulnerable Application - Tweet Page' },
+    component: () => import('../views/TweetView.vue')
   }
 ]
 
