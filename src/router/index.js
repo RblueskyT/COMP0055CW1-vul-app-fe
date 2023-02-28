@@ -12,8 +12,14 @@ const routes = [
   {
     path: '/login',
     name: 'login',
-    meta: { title: 'Vulnerable Application - Login Page' },
+    meta: { title: 'Vulnerable Application - Login' },
     component: () => import('../views/LoginView.vue')
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    meta: { title: 'Vulnerable Application - Dashboard' },
+    component: () => import('../views/DashboardView.vue')
   },
   {
     path: '/example',

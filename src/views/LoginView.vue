@@ -1,7 +1,14 @@
 <template>
   <div class="login">
-    <h1>This is the login page</h1>
-    <h2 style="color: green"> Welcome {{ returned_msg }}</h2>
+    <h1 style="text-align: center;">Vulnerable App User Login</h1>
+    <form style="text-align: center;">
+      <label for="username">Username:</label><br>
+      <input type="text" id="username" name="username" v-model="account_login_form.username"><br>
+      <label for="password">Password:</label><br>
+      <input type="password" id="password" name="password" v-model="account_login_form.password"><br><br>
+      <button type="button" @click="accountLogin">Log In</button>
+    </form>
+    <p style="text-align: center;">or</p>
     <a
       className="login-link"
       :href= link >
@@ -20,11 +27,14 @@
 <script>
   import {  defineComponent,ref } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
+  import createStore from "@/store";
   import axios from 'axios';
   
   export default defineComponent({
   setup() {
   // const test_msg = ref('');
+  const account_login_form = ref({username: '', password: ''});
+
   const client_id = ref('Iv1.4ecad6f945b81b88');
   const redirect_uri = ref('http://localhost:8080/login')
   const link = ref('https://github.com/login/oauth/authorize?scope=user&client_id='+client_id.value+'&redirect_uri='+redirect_uri.value)
@@ -56,6 +66,24 @@
   // const getTestMsg = () => {
   //   test_msg.value = "Guest"
   // };
+
+  const accountLogin = async () => {
+    try {
+        const resData = await axios.post('http://localhost:8000/login/account_login', account_login_form.value);
+        if (resData.data.code === 200) {
+            createStore.commit('login', account_login_form.value.username)
+            router.push({
+              name: 'dashboard',
+            });
+          } else {
+            alert("Authentication Failed");
+          }
+      } catch (error) {
+        alert('Unknown Error Occurs');
+      } finally {
+        // Empty here
+      }
+  }
   
   const Login = async (code) => {
     try {
@@ -107,8 +135,10 @@
 
 
   return {
+    account_login_form,
     link,
-    twitterLink
+    twitterLink,
+    accountLogin,
   }
 },
 });

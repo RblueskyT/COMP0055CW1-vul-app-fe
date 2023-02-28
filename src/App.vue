@@ -2,7 +2,13 @@
   <router-view></router-view>
 </template>
 
-<script></script>
+<script>
+export default {
+  mounted() {
+    this.$store.commit('initialiseStore')
+  }
+}
+</script>
 
 <style>
 #nprogress .bar {
