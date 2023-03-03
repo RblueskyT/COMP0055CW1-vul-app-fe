@@ -12,6 +12,10 @@
     <button type="button" @click="startGithubLogin('githubLoginCF')">
         <span>Log In with GitHub (Client-Flow)</span>
     </button>
+    <p>or</p>
+    <button type="button" @click="startGithubLogin('githubLoginSF')">
+        <span>Log In with GitHub (Server-Flow)</span>
+    </button>
     <!-- <a
       className="login-link"
       :href= link >
@@ -44,6 +48,10 @@
   const gcfr_uri = 'http://localhost:8080/login';
   const gcf_scope = 'user';
   const gcf_request_link = `https://github.com/login/oauth/authorize?client_id=${gcfc_id}&redirect_uri=${gcfr_uri}&scope=${gcf_scope}`;
+  /* Constants used for github OAuth login - server flow */
+  const gsfc_id = ref('');
+  const gsfr_uri = ref('');
+  const gsf_scope = ref('');
 
   // Store the user's last login method
   const changeLoginMethod = (newLoginMethod) => {
@@ -60,6 +68,7 @@
             router.push({
               name: 'dashboard',
             });
+            alert('You successfully logged in');
           } else {
             alert("Authentication Failed");
           }
@@ -71,9 +80,28 @@
   }
 
   // Start github login
-  const startGithubLogin = (flowType) => {
+  const startGithubLogin = async (flowType) => {
     changeLoginMethod(flowType);
-    window.location.href = gcf_request_link;
+    try {
+      if (flowType == 'githubLoginCF') {
+        window.location.href = gcf_request_link;
+      } else {
+          const requiredInfo = await axios.get('http://localhost:8000/login/github_server_flow_info');
+          if (requiredInfo.data.code == 200) {
+            gsfc_id.value = requiredInfo.data.client_id;
+            gsfr_uri.value = requiredInfo.data.redirect_uri;
+            gsf_scope.value = requiredInfo.data.scope;
+            const gsf_request_link = `https://github.com/login/oauth/authorize?client_id=${gsfc_id.value}&redirect_uri=${gsfr_uri.value}&scope=${gsf_scope.value}`;
+            window.location.href = gsf_request_link;
+          } else {
+            alert('Unknown Error Occurs');
+          }
+      }
+    } catch (error) {
+                alert('Unknown Error Occurs');
+    } finally {
+        // Empty here
+    }
   }
 
   // Github login - redeem access token and login
@@ -95,6 +123,7 @@
                             router.push({
                               name: 'dashboard',
                             });
+                            alert('You successfully logged in');
                           } else {
                             alert("Authentication Failed");
                           }
@@ -102,7 +131,18 @@
                 }
                 /* Github Server Flow */
                 if (createStore.getters.getLoginMethod == 'githubLoginSF') {
-                    // todo
+                  const resData = await axios.post('http://localhost:8000/login/github_server_flow_redeem_and_login', { code: route.query.code });
+                  if (resData.data.code == 404) {
+                    alert("Bad Verification Code");
+                  } else if (resData.data.code == 200) {
+                    createStore.commit('login', resData.data.username)
+                    router.push({
+                      name: 'dashboard',
+                    });
+                    alert('You successfully logged in');
+                  } else {
+                    alert("Authentication Failed");
+                  }
                 }
             } catch (error) {
                 alert('Unknown Error Occurs');
