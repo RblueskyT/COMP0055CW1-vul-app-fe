@@ -2,6 +2,7 @@
     <div class="dashboard">
       <h1>Dashboard</h1>
       <h1 style="color: green">Welcome, {{ createStore.getters.getUsername }}!</h1>
+      <div><button type="button" @click="userLogout">Log Out</button></div>
       <h2>Current Balance:</h2>
       <h2>{{ userBalance }}</h2>
       <h2>Balance Records:</h2>
@@ -12,7 +13,7 @@
           <th>Change Reason</th>
           <th>Change Date</th>
         </tr>
-        <tr v-for="(item, index) in userBalanceRecord" :key="index">
+        <tr v-for="(item, index) in userBalanceRecords" :key="index">
           <td>{{ index + 1 }}</td>
           <td>{{ item.balance_change }}</td>
           <td>{{ item.change_reason }}</td>
@@ -27,9 +28,23 @@
       <label for="reason">Reason:</label><br>
       <input type="text" id="reason" name="reason" v-model="accountTransferForm.reason"><br><br>
       <button type="button" @click="accountTransfer">Account Transfer</button>
-    </form><br>
+      </form><br>
       <div><button type="button" @click="getUserBalanceAndBalanceRecords(createStore.getters.getUsername)">Refresh Balance</button></div><br>
-      <div><button type="button" @click="userLogout">Log Out</button></div>
+      <h2>Posts:</h2>
+      <h6>--------------------------------------------------------------------</h6>
+      <div v-for="(item, index) in posts" :key="index">
+        <h3>{{ item.post_title }}</h3>
+        <div v-html="item.post_content"></div>
+        <h6>--------------------------------------------------------------------</h6>
+      </div>
+      <form>
+      <label for="post_title">Post Title:</label><br>
+      <input type="text" id="post_title" name="post_title" v-model="postForm.post_title"><br>
+      <label for="post_content">Post Content:</label><br>
+      <input type="text" id="post_content" name="post_content" v-model="postForm.post_content"><br><br>
+      <button type="button" @click="addPost">Add Post</button>
+      </form><br>
+      <div><button type="button" @click="getAllPosts(createStore.getters.getUsername)">Refresh Posts</button></div><br>
     </div>
   </template>
   
@@ -43,13 +58,19 @@
     setup() {
         const router = useRouter();
         const userBalance = ref(0);
-        const userBalanceRecord = ref([]);
+        const userBalanceRecords = ref([]);
+        const posts = ref([]);
         const accountTransferForm = ref({
           src_username: createStore.getters.getUsername,
           dst_username: '',
           amount: 1,
           reason: '',
         });
+        const postForm = ref({
+          username: createStore.getters.getUsername,
+          post_title: '',
+          post_content: '',
+        })
 
     const getUserBalanceAndBalanceRecords = async (username) => {
       try {
@@ -59,8 +80,22 @@
         }
         const balanceRecordsData = await axios.post('http://localhost:8000/dashboard/get_user_balance_records', { username: username });
         if (balanceRecordsData.data.code == 200) {
-          userBalanceRecord.value.splice(0, userBalanceRecord.value.length);
-          userBalanceRecord.value = userBalanceRecord.value.concat(balanceRecordsData.data.balance_records);
+          userBalanceRecords.value.splice(0, userBalanceRecords.value.length);
+          userBalanceRecords.value = userBalanceRecords.value.concat(balanceRecordsData.data.balance_records);
+        }
+      } catch (error) {
+        alert('Unknown Error Occurs');
+      } finally {
+        // Empty here
+      }
+    }
+
+    const getAllPosts = async (username) => {
+      try {
+        const postData = await axios.post('http://localhost:8000/dashboard/get_posts', { username: username });
+        if (postData.data.code == 200) {
+          posts.value.splice(0, posts.value.length);
+          posts.value = posts.value.concat(postData.data.posts);
         }
       } catch (error) {
         alert('Unknown Error Occurs');
@@ -75,6 +110,24 @@
         if (transferRes.data.code == 200) {
           alert('Transfer Succeeded');
           getUserBalanceAndBalanceRecords(createStore.getters.getUsername);
+          getAllPosts(createStore.getters.getUsername);
+        } else {
+          alert('Unknown Error Occurred');
+        }
+      } catch (error) {
+        alert('Unknown Error Occurs');
+      } finally {
+        // Empty here
+      }
+    }
+
+    const addPost = async () => {
+      try {
+        const addPostRes = await axios.post('http://localhost:8000/dashboard/add_post', postForm.value);
+        if (addPostRes.data.code == 200) {
+          alert('Post Creation Succeeded');
+          getUserBalanceAndBalanceRecords(createStore.getters.getUsername);
+          getAllPosts(createStore.getters.getUsername);
         } else {
           alert('Unknown Error Occurred');
         }
@@ -102,6 +155,7 @@
                 alert("Please log in first");
             } else {
               getUserBalanceAndBalanceRecords(username);
+              getAllPosts(username);
             }
         }
       } catch (error) {
@@ -134,10 +188,14 @@
     return {
         createStore,
         userBalance,
-        userBalanceRecord,
+        userBalanceRecords,
+        posts,
         accountTransferForm,
+        postForm,
         getUserBalanceAndBalanceRecords,
+        getAllPosts,
         accountTransfer,
+        addPost,
         userLogout,
     }
   },
