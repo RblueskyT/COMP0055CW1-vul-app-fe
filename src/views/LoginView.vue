@@ -9,12 +9,16 @@
       <button type="button" @click="accountLogin">Log In</button>
     </form>
     <p>or</p>
-    <button type="button" @click="startGithubLogin('githubLoginCF')">
-        <span>Log In with GitHub (Client-Flow)</span>
-    </button>
-    <p>or</p>
     <button type="button" @click="startGithubLogin('githubLoginSF')">
         <span>Log In with GitHub (Server-Flow)</span>
+    </button>
+    <p>or</p>
+    <button type="button" @click="startTwitterLogin('twitterLoginSF')">
+        <span>Log In with Twitter (Server-Flow)</span>
+    </button>
+    <p>or</p>
+    <button type="button" @click="startGithubLogin('githubLoginCF')">
+        <span>Log In with GitHub (Client-Flow)</span>
     </button>
     <!-- <a
       className="login-link"
@@ -151,6 +155,48 @@
             }
         }
 
+  // Start twitter login
+  const startTwitterLogin = async (flowType) => {
+    changeLoginMethod(flowType);
+    try {
+      if (flowType == 'twitterLoginSF') {
+          const requiredInfo = await axios.get('http://localhost:8000/login/twitter_server_flow_info');
+          if (requiredInfo.data.code == 200) {
+            const queries = new URLSearchParams(requiredInfo.data.options).toString();
+            const tsf_request_link = `https://twitter.com/i/oauth2/authorize?${queries}`;
+            window.location.href = tsf_request_link;
+          } else {
+            alert('Unknown Error Occurs');
+          }
+      }
+    } catch (error) {
+        alert('Unknown Error Occurs');
+    } finally {
+        // Empty here
+    }
+  }
+
+  // Twitter login - redeem access token and login
+  const twitterRedeemAccessTokenAndLogin = async () => {
+            try {
+                /* Twitter Server Flow */
+                  const resData = await axios.post('http://localhost:8000/login/twitter_server_flow_redeem_and_login', { code: route.query.code });
+                  if (resData.data.code == 200) {
+                    createStore.commit('login', resData.data.username)
+                    router.push({
+                      name: 'dashboard',
+                    });
+                    alert('You successfully logged in');
+                  } else {
+                    alert("Authentication Failed");
+                  }
+            } catch (error) {
+                alert('Unknown Error Occurs');
+            } finally {
+                // Empty here
+            }
+        }
+
   // check if it is needed to redirect to the dashboard automatically
   const checkLoginMethod = () => {
       const login_method = localStorage.getItem('login_method');
@@ -161,7 +207,9 @@
             }
       }
       if (login_method.includes('twitter')) {
-        // todo
+        if(route.query.code && route.query.code.length != 0) {
+              twitterRedeemAccessTokenAndLogin();
+            }
       }
   }
   
@@ -254,6 +302,7 @@
     // twitterLink,
     accountLogin,
     startGithubLogin,
+    startTwitterLogin,
   }
 },
 });
