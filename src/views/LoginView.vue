@@ -112,7 +112,7 @@
   const githubRedeemAccessTokenAndLogin = async () => {
             try {
                 /* Github Client Flow */
-                if (createStore.getters.getLoginMethod == 'githubLoginCF') {
+                if (route.query.login_method == 'githubLoginCF') {
                     const resData = await axios.post('http://localhost:8000/login/github_client_flow_redeem', { code: route.query.code });
                     if (resData.data.github_response.includes('bad_verification_code')) {
                         router.push({
@@ -134,7 +134,7 @@
                     }
                 }
                 /* Github Server Flow */
-                if (createStore.getters.getLoginMethod == 'githubLoginSF') {
+                if (route.query.login_method == 'githubLoginSF') {
                   const resData = await axios.post('http://localhost:8000/login/github_server_flow_redeem_and_login', { code: route.query.code });
                   if (resData.data.code == 404) {
                     alert("Bad Verification Code");
@@ -201,12 +201,13 @@
   const checkLoginMethod = () => {
       const login_method = localStorage.getItem('login_method');
       createStore.commit('changeLoginMethod', login_method);
-      if (login_method.includes('github')) {
+      router.push({query: {...route.query, login_method: createStore.getters.getLoginMethod }});
+      if (route.query.login_method.includes('github')) {
             if(route.query.code && route.query.code.length != 0) {
               githubRedeemAccessTokenAndLogin();
             }
       }
-      if (login_method.includes('twitter')) {
+      if (route.query.login_method.includes('twitter')) {
         if(route.query.code && route.query.code.length != 0) {
               twitterRedeemAccessTokenAndLogin();
             }
