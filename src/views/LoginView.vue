@@ -68,7 +68,8 @@
         changeLoginMethod('accountLogin');
         const resData = await axios.post('http://localhost:8000/login/account_login', account_login_form.value);
         if (resData.data.code === 200) {
-            createStore.commit('login', account_login_form.value.username)
+            const payload = { username: account_login_form.value.username, usertoken: '' };
+            createStore.dispatch('userLogin', payload);
             router.push({
               name: 'dashboard',
             });
@@ -123,7 +124,8 @@
                         const access_token = resData.data.github_response.split('&')[0].split('=')[1];
                         const loginRes = await axios.post('http://localhost:8000/login/github_client_flow_login', {access_token: access_token});
                         if (loginRes.data.code === 200) {
-                            createStore.commit('login', loginRes.data.username)
+                            const payload = { username: loginRes.data.username, usertoken: access_token };
+                            createStore.dispatch('userLogin', payload);
                             router.push({
                               name: 'dashboard',
                             });
@@ -139,7 +141,8 @@
                   if (resData.data.code == 404) {
                     alert("Bad Verification Code");
                   } else if (resData.data.code == 200) {
-                    createStore.commit('login', resData.data.username)
+                    const payload = { username: resData.data.username, usertoken: resData.data.token };
+                    createStore.dispatch('userLogin', payload);
                     router.push({
                       name: 'dashboard',
                     });
@@ -182,7 +185,8 @@
                 /* Twitter Server Flow */
                   const resData = await axios.post('http://localhost:8000/login/twitter_server_flow_redeem_and_login', { code: route.query.code });
                   if (resData.data.code == 200) {
-                    createStore.commit('login', resData.data.username)
+                    const payload = { username: resData.data.username, usertoken: resData.data.token };
+                    createStore.dispatch('userLogin', payload);
                     router.push({
                       name: 'dashboard',
                     });
@@ -199,18 +203,15 @@
 
   // check if it is needed to redirect to the dashboard automatically
   const checkLoginMethod = () => {
-      const login_method = localStorage.getItem('login_method');
-      createStore.commit('changeLoginMethod', login_method);
       router.push({query: {...route.query, login_method: createStore.getters.getLoginMethod }});
-      if (route.query.login_method.includes('github')) {
-            if(route.query.code && route.query.code.length != 0) {
-              githubRedeemAccessTokenAndLogin();
-            }
-      }
-      if (route.query.login_method.includes('twitter')) {
-        if(route.query.code && route.query.code.length != 0) {
-              twitterRedeemAccessTokenAndLogin();
-            }
+      if (route.query.code && route.query.code.length !== 0) {
+        setTimeout(() => {
+          if (route.query.login_method && route.query.login_method.includes('github')) {
+            githubRedeemAccessTokenAndLogin();
+        } else if (route.query.login_method && route.query.login_method.includes('twitter')) {
+            twitterRedeemAccessTokenAndLogin();
+        }
+        }, 10);
       }
   }
   

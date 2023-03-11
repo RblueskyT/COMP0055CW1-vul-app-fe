@@ -3,6 +3,10 @@
       <h1>Dashboard</h1>
       <h1 style="color: green">Welcome, {{ createStore.getters.getUsername }}!</h1>
       <div><button type="button" @click="userLogout">Log Out</button></div>
+      <div v-if="createStore.getters.getLoginMethod == 'twitterLoginSF'">
+        <h1>Tweet</h1>
+      <input style="margin-right: 5px;" placeholder="Enter your tweet here ..." v-model="tweetText" /><button @click="postANewTweet()" >Tweet</button>
+      </div>
       <h2>Current Balance:</h2>
       <h2>{{ userBalance }}</h2>
       <h2>Balance Records:</h2>
@@ -57,6 +61,7 @@
     export default defineComponent({
     setup() {
         const router = useRouter();
+        const tweetText = ref('');
         const userBalance = ref(0);
         const userBalanceRecords = ref([]);
         const posts = ref([]);
@@ -71,6 +76,16 @@
           post_title: '',
           post_content: '',
         })
+
+    const postANewTweet = async () => {
+      if(tweetText.value.length > 0){
+        console.log(createStore.state);
+            const resData = await axios.post('http://localhost:8000/login/tweet', { text: tweetText.value, token: createStore.getters.getUserToken });
+            alert(resData.data);
+            }else{
+                alert('you can not post an empty tweet')
+            }
+    }
 
     const getUserBalanceAndBalanceRecords = async (username) => {
       try {
@@ -168,7 +183,7 @@
       try {
         const resData = await axios.get('http://localhost:8000/login/user_logout');
         if (resData.status === 200) {
-            createStore.commit('logout')
+            createStore.commit('logout');
             router.push({
               name: 'login',
             });
@@ -187,11 +202,13 @@
   
     return {
         createStore,
+        tweetText,
         userBalance,
         userBalanceRecords,
         posts,
         accountTransferForm,
         postForm,
+        postANewTweet,
         getUserBalanceAndBalanceRecords,
         getAllPosts,
         accountTransfer,
