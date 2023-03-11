@@ -203,8 +203,10 @@
 
   // check if it is needed to redirect to the dashboard automatically
   const checkLoginMethod = () => {
-      router.push({query: {...route.query, login_method: createStore.getters.getLoginMethod }});
       if (route.query.code && route.query.code.length !== 0) {
+        if (!route.query.login_method) {
+          router.push({query: {...route.query, login_method: createStore.getters.getLoginMethod }});
+        }
         setTimeout(() => {
           if (route.query.login_method && route.query.login_method.includes('github')) {
             githubRedeemAccessTokenAndLogin();
