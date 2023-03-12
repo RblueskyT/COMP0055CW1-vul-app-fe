@@ -4,7 +4,7 @@ export default createStore({
   state: {
     username: "",
     usertoken: "",
-    login_method: "accountLogin",
+    login_method: "githubLoginSF",
   },
   getters: {
     getUsername (state) {

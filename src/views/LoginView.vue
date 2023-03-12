@@ -1,14 +1,14 @@
 <template>
   <div class="login" style="text-align: center;">
     <h1>Vulnerable App User Login</h1>
-    <form>
+    <!-- <form>
       <label for="username">Username:</label><br>
       <input type="text" id="username" name="username" v-model="account_login_form.username"><br>
       <label for="password">Password:</label><br>
       <input type="password" id="password" name="password" v-model="account_login_form.password"><br><br>
       <button type="button" @click="accountLogin">Log In</button>
     </form>
-    <p>or</p>
+    <p>or</p> -->
     <button type="button" @click="startGithubLogin('githubLoginSF')">
         <span>Log In with GitHub (Server-Flow)</span>
     </button>
@@ -61,7 +61,7 @@
             router.push({
               name: 'dashboard',
             });
-            alert('You successfully logged in');
+            console.log('You successfully logged in');
           } else {
             alert("Authentication Failed");
           }
@@ -117,7 +117,7 @@
                             router.push({
                               name: 'dashboard',
                             });
-                            alert('You successfully logged in');
+                            console.log('You successfully logged in');
                           } else {
                             alert("Authentication Failed");
                           }
@@ -134,7 +134,7 @@
                     router.push({
                       name: 'dashboard',
                     });
-                    alert('You successfully logged in');
+                    console.log('You successfully logged in');
                   } else {
                     alert("Authentication Failed");
                   }
@@ -178,7 +178,7 @@
                     router.push({
                       name: 'dashboard',
                     });
-                    alert('You successfully logged in');
+                    console.log('You successfully logged in');
                   } else {
                     alert("Authentication Failed");
                   }
