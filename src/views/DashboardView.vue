@@ -80,7 +80,7 @@
     const postANewTweet = async () => {
       if(tweetText.value.length > 0){
         console.log(createStore.state);
-            const resData = await axios.post('http://localhost:8000/login/tweet', { text: tweetText.value, token: createStore.getters.getUserToken });
+            const resData = await axios.post('http://localhost:8000/dashboard/tweet', { username: createStore.getters.getUsername, text: tweetText.value, token: createStore.getters.getUserToken });
             alert(resData.data);
             }else{
                 alert('you can not post an empty tweet')
@@ -181,7 +181,7 @@
     };
     const userLogout = async () => {
       try {
-        const resData = await axios.get('http://localhost:8000/login/user_logout');
+        const resData = await axios.post('http://localhost:8000/login/user_logout', { username: createStore.getters.getUsername });
         if (resData.status === 200) {
             createStore.commit('logout');
             router.push({
