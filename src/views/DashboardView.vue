@@ -49,6 +49,23 @@
       <button type="button" @click="addPost">Add Post</button>
       </form><br>
       <div><button type="button" @click="getAllPosts(createStore.getters.getUsername)">Refresh Posts</button></div><br>
+      <div v-if="isDropbox">
+        <h2>Dropbox File Upload:</h2>
+        <h6>--------------------------------------------------------------------</h6>
+        <!-- <h1>Dropbox Page</h1> -->
+        <div v-if="Filestore.submiting">
+            <p>{{Filestore.percentage + '%'}}</p>
+        </div>
+        <div v-else>
+            <form>
+                <input type="file" name="file" accept="*" @change="relocateFile">
+            </form>
+            <br>
+            <button @click="handleSubmit()" >Upload file to Dropbox</button>
+        </div>
+      </div>
+      <br>
+      <br>
     </div>
   </template>
   
@@ -57,9 +74,16 @@
     import { useRouter } from 'vue-router';
     import createStore from "@/store";
     import axios from 'axios';
+    import { reactive } from 'vue';
+
+    
     
     export default defineComponent({
     setup() {
+        const Filestore = reactive({
+          submiting: false,
+          percentage: 0
+        })
         const router = useRouter();
         const tweetText = ref('');
         const userBalance = ref(0);
@@ -76,7 +100,9 @@
           post_title: '',
           post_content: '',
         })
-
+        var file = null;
+        const isDropbox = ref(createStore.getters.getLoginMethod.includes('Dropbox'));
+    
     const postANewTweet = async () => {
       if(tweetText.value.length > 0){
         console.log(createStore.state);
@@ -153,6 +179,48 @@
       }
     }
 
+    const handleSubmit = async () => {
+                if(file){
+                    Filestore.submiting = true;
+                    var xhr = new XMLHttpRequest();
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            var fileInfo = JSON.parse(xhr.response);
+                            // Upload succeeded. Do something here with the file info.
+                            alert('file uploaded successfully');
+                            Filestore.submiting = false;
+                            Filestore.percentage = 0;
+                            console.log(fileInfo);
+                        }
+                        else {
+                            var errorMessage = xhr.response || 'Unable to upload file';
+                            // Upload failed. Do something here with the error.
+                            alert(errorMessage);
+                        }
+                    };
+                    
+                    xhr.upload.onprogress = function(evt) {
+                      Filestore.percentage = parseInt(100.0 * evt.loaded / evt.total);
+                    };
+
+                    xhr.open('POST', 'https://content.dropboxapi.com/2/files/upload');
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + createStore.getters.getUserToken);
+                    xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+                    xhr.setRequestHeader('Dropbox-API-Arg', JSON.stringify({
+                    path: '/' +  file.name,
+                    mode: 'add',
+                    autorename: true,
+                    mute: false
+                    }));
+                    
+                    xhr.send(file);
+                }
+            }
+
+    const relocateFile = async (event) => {
+        file = event.target.files[0];
+    }
+
     const checkUserStatus = async () => {
       const username = createStore.getters.getUsername;
       try {
@@ -208,12 +276,16 @@
         posts,
         accountTransferForm,
         postForm,
+        isDropbox,
+        Filestore,
         postANewTweet,
         getUserBalanceAndBalanceRecords,
         getAllPosts,
         accountTransfer,
         addPost,
         userLogout,
+        handleSubmit,
+        relocateFile
     }
   },
   });
