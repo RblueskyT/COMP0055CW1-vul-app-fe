@@ -9,6 +9,7 @@
       <button type="button" @click="accountLogin">Log In</button>
     </form>
     <p>or</p> -->
+    <br>
     <button type="button" @click="startGithubLogin('githubLoginSF')">
         <span>Log In with GitHub (Server-Flow)</span>
     </button>
@@ -20,6 +21,10 @@
     <button type="button" @click="startGithubLogin('githubLoginCF')">
         <span>Log In with GitHub (Client-Flow)</span>
     </button> -->
+    <p>or</p>
+    <button type="button" @click="startDropboxLogin('DropboxSF')">
+        <span>Log In with Dropbox (Server-Flow)</span>
+    </button>
   </div>
 </template>
 
@@ -189,6 +194,46 @@
             }
         }
 
+  // start Dropbox login
+  const startDropboxLogin = async (flowType) => {
+      changeLoginMethod(flowType);
+      try {
+        if (flowType == 'DropboxSF') {
+            const requiredInfo = await axios.get('http://localhost:8000/login/dropbox_server_flow_info'); //
+            if (requiredInfo.data.code == 200) {
+              const queries = new URLSearchParams(requiredInfo.data.options).toString();
+              const tsf_request_link = `https://www.dropbox.com/oauth2/authorize?${queries}`;
+              window.location.href = tsf_request_link;
+            } else {
+              alert('Unknown Error Occurs');
+            }
+        }
+      } catch (error) {
+          alert('Unknown Error Occurs');
+      } finally {
+          // Empty here
+      }
+    }
+    const dropboxRedeemAccessTokenAndLogin = async () => { 
+      try {
+          /* DropBox Server Flow */
+            const resData = await axios.post('http://localhost:8000/login/dropbox_server_flow_redeem_and_login', { code: route.query.code }); //
+            if (resData.data.code == 200) {
+              const payload = { username: resData.data.username, usertoken: resData.data.token };
+              createStore.dispatch('userLogin', payload);
+              router.push({
+                name: 'dashboard',
+              });
+              console.log('You successfully logged in');
+            } else {
+              alert("Authentication Failed");
+            }
+          } catch (error) {
+              alert('Unknown Error Occurs');
+          } finally {
+              // Empty here
+          }
+    }
   // check if it is needed to redirect to the dashboard automatically
   const checkLoginMethod = () => {
       if (route.query.code && route.query.code.length !== 0) {
@@ -200,7 +245,9 @@
             githubRedeemAccessTokenAndLogin();
         } else if (route.query.login_method && route.query.login_method.includes('twitter')) {
             twitterRedeemAccessTokenAndLogin();
-        }
+        } else if (route.query.login_method && route.query.login_method.includes('Dropbox')){
+          dropboxRedeemAccessTokenAndLogin();
+        } 
         }, 10);
       }
   }
@@ -212,6 +259,7 @@
     accountLogin,
     startGithubLogin,
     startTwitterLogin,
+    startDropboxLogin,
   }
 },
 });
