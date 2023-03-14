@@ -7,7 +7,7 @@
         <h1>Tweet</h1>
       <input style="margin-right: 5px;" placeholder="Enter your tweet here ..." v-model="tweetText" /><button @click="postANewTweet()" >Tweet</button>
       </div>
-      <h2>Current Balance:</h2>
+      <!-- <h2>Current Balance:</h2>
       <h2>{{ userBalance }}</h2>
       <h2>Balance Records:</h2>
       <table>
@@ -33,7 +33,7 @@
       <input type="text" id="reason" name="reason" v-model="accountTransferForm.reason"><br><br>
       <button type="button" @click="accountTransfer">Account Transfer</button>
       </form><br>
-      <div><button type="button" @click="getUserBalanceAndBalanceRecords(createStore.getters.getUsername)">Refresh Balance</button></div><br>
+      <div><button type="button" @click="getUserBalanceAndBalanceRecords(createStore.getters.getUsername)">Refresh Balance</button></div><br> -->
       <h2>Posts:</h2>
       <h6>--------------------------------------------------------------------</h6>
       <div v-for="(item, index) in posts" :key="index">

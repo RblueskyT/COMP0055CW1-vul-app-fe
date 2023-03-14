@@ -16,10 +16,10 @@
     <button type="button" @click="startTwitterLogin('twitterLoginSF')">
         <span>Log In with Twitter (Server-Flow)</span>
     </button>
-    <p>or</p>
+    <!-- <p>or</p>
     <button type="button" @click="startGithubLogin('githubLoginCF')">
         <span>Log In with GitHub (Client-Flow)</span>
-    </button>
+    </button> -->
   </div>
 </template>
 
